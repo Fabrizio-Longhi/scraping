@@ -1,8 +1,7 @@
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from rich import print
-import datetime
 
-def scrape_news(url: str, word: str):
+def scrape_news(url: str):
     with sync_playwright() as playwright:
         chrome = playwright.chromium            # Usar Chromium para mayor compatibilidad
         browser = chrome.launch(headless=True)  # Ejecutar en headless True para mayor velocidad
@@ -25,7 +24,7 @@ def scrape_news(url: str, word: str):
 
         # Procesar solo 5 noticias para pruebas
         details_news = []
-        for item in links[:50]:
+        for item in links[:60]:
             try:
                 details = get_news_details(page, item["url"], item["title"])
                 details_news.append(details)
@@ -47,12 +46,11 @@ def get_news_details(page, url: str, title: str):
         details = {"url": url, "title": title}
 
         # Extraer autor
-        author = page.locator("h5.current-tag a").first
+        author = page.locator("div.author-name.ff-14px-w800").first
         details["author"] = author.inner_text().strip() if author.count() > 0 else "No disponible"
 
         # Extraer fecha
         date = page.locator("div.date.modification-date.ff-14px time").first
-        date = date.isoformat()
         details["date"] = date.inner_text().strip() if date.count() > 0 else "No disponible"
 
         # URL de imagen principal
