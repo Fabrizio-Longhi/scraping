@@ -1,0 +1,1 @@
+# Gestiona el guardado de datos en un SQLite

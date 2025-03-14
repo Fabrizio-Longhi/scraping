@@ -1,0 +1,1 @@
+# Funciones auxiliares, como conversion e fecha y manejo de errores
