@@ -19,7 +19,7 @@ def scrape_news(url: str):
         except PlaywrightTimeoutError:
             print("Advertencia: Timeout esperando carga inicial, continuando...")
 
-        all_links = page.locator("span.title-prefix a, h2.element.title a")
+        all_links = page.locator("h2.is-display-inline.article-title a")
         links = [
             {"url": link.get_attribute("href")}
             for link in all_links.all()
@@ -29,7 +29,8 @@ def scrape_news(url: str):
 
         details_news = []
         for item in links:
-            if is_valid_news(item["url"]):
+            url = item["url"]
+            if url and is_valid_news(item["url"]):
                 try:
                     details = get_news_details(page, item["url"])
                     details_news.append(details)

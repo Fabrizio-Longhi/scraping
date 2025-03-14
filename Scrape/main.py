@@ -1,12 +1,28 @@
 from scraper import scrape_news
+from storage import NewsStorage
 import time
+import os
+from config import URL_base
 
-URL = "https://www.pagina12.com.ar/"
+URL = URL_base
 
 
 if __name__ == "__main__":
+    # Inicializar base de datos
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "noticias_pagina12.db")
+    storage = NewsStorage(db_path)
+    
     init = time.time()
+    print(f"Iniciando scraping de {URL}...")
+    
+    
+    # Realizar scraping
     news = scrape_news(URL)
+    
+    end = time.time()
+    tiempo_total = end - init
+    
+    # Mostrar resultados
     print("\n--- RESULTADOS FINALES ---")
     for i, item in enumerate(news):
         print(f"\nNoticia {i+1}:")
@@ -18,4 +34,17 @@ if __name__ == "__main__":
         print(f"Descripción: {item.get('headline', 'No disponible')}")
         print("-" * 50)
     
-    print(f"\nTiempo total de ejecución: {time.time() - init:.2f} segundos")
+    # Guardar noticias en la base de datos
+    total, nuevas = storage.save_news(news)
+    
+    
+    # Mostrar estadísticas
+    print(f"\n--- ESTADÍSTICAS DE ALMACENAMIENTO ---")
+    print(f"Total de noticias procesadas: {total}")
+    print(f"Noticias nuevas guardadas: {nuevas}")
+    print(f"Tiempo total de ejecución: {tiempo_total:.2f} segundos")
+    
+
+    
+    # Cerrar conexión a la base de datos
+    storage.close()
