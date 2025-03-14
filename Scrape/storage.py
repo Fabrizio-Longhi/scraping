@@ -34,13 +34,12 @@ class NewsStorage:
             self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS news (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                url TEXT UNIQUE NOT NULL,
-                author TEXT,
-                publication_date TEXT,
-                image_url TEXT,
-                headline TEXT,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                Titulo TEXT NOT NULL,
+                URL TEXT UNIQUE NOT NULL,
+                Autor TEXT,
+                Fecha TEXT DEFAULT CURRENT_TIMESTAMP,
+                Imagen_url TEXT,
+                Descripcion TEXT
             )
             ''')
             
@@ -67,14 +66,14 @@ class NewsStorage:
         try:
             for item in news_items:
                 # Verificar si la noticia ya existe por URL
-                self.cursor.execute("SELECT id FROM news WHERE url = ?", (item.get('url'),))
+                self.cursor.execute("SELECT id FROM news WHERE URL = ?", (item.get('url'),))
                 existing = self.cursor.fetchone()
                 
                 if not existing:
                     # Almacenar la noticia como nuevo registro
                     self.cursor.execute('''
-                    INSERT INTO news (title, url, author, publication_date, image_url, headline, raw_data)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO news (Titulo, URL, Autor, Fecha, Imagen_url, Descripcion)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ''', (
                         item.get('title', 'No disponible'),
                         item.get('url', ''),
@@ -82,7 +81,6 @@ class NewsStorage:
                         item.get('date', 'No disponible'),
                         item.get('image_url', 'No disponible'),
                         item.get('headline', 'No disponible'),
-                        json.dumps(item)  # Guardar los datos crudos como JSON
                     ))
                     new_count += 1
             

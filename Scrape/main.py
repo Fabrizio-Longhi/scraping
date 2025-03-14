@@ -15,9 +15,10 @@ if __name__ == "__main__":
     init = time.time()
     print(f"Iniciando scraping de {URL}...")
     
+    word = input("Ingrese la palabra que desea buscar: ")
     
     # Realizar scraping
-    news = scrape_news(URL)
+    news = scrape_news(URL,word)
     
     end = time.time()
     tiempo_total = end - init

@@ -1,12 +1,13 @@
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from rich import print
 from datetime import datetime
-import locale
 import re
 from utils import DataConverter
 
 
-def scrape_news(url: str):
+def scrape_news(url: str, keyword: str):
+    """Scrapea las noticias de la página y devuelve los detalles de las noticias que contienen la palabra clave"""
+
     with sync_playwright() as playwright:
         chrome = playwright.chromium            # Usar Chromium para mayor compatibilidad
         browser = chrome.launch(headless=True)  # Ejecutar en headless True para mayor velocidad
@@ -32,9 +33,10 @@ def scrape_news(url: str):
             url = item["url"]
             if url and is_valid_news(item["url"]):
                 try:
-                    details = get_news_details(page, item["url"])
-                    details_news.append(details)
-                    print(f"Detalles extraídos: {details}")
+                    details = get_news_details(page, item["url"], keyword)
+
+                    if details:
+                        details_news.append(details)
                 except Exception as e:
                     print(f"Error procesando noticia {item['url']}: {e}")
             else:
@@ -51,8 +53,8 @@ def is_valid_news(url: str) -> bool:
 
 
 
-def get_news_details(page, url: str):
-    """Extrae los detalles de una noticia individual"""
+def get_news_details(page, url: str, keyword: str):
+    """Extrae los detalles de una noticia si tiene la palabra clave"""
     print(f"Extrayendo detalles de la noticia: {url}")
     
     DataConverter.set_spanish_locales()           # Establecer locale en español para parsear fechas          
@@ -66,6 +68,26 @@ def get_news_details(page, url: str):
         # Extraer título
         title = page.locator('div[class="col 2-col"] h1').first
         details["title"] = title.inner_text().strip() if title.count() > 0 else "No disponible"
+
+        # Descripción de la noticia
+        description = page.locator("h2.h3.ff-20px-w400").first
+        details["headline"] = description.inner_text().strip() if description.count() > 0 else "No disponible"
+        
+        if keyword:
+            keyword_lower= keyword.lower()
+            title_lower = details["title"].lower()
+            headline_lower = details["headline"].lower()
+
+            if keyword_lower not in title_lower and keyword_lower not in headline_lower:
+                return None
+            else:
+                found = []
+                if keyword_lower in title_lower:
+                    found.append("título")
+                if keyword_lower in headline_lower:
+                    found.append("descripción")
+
+                print(f"La noticia '{url}' contiene la palabra clave '{keyword}' en: {', '.join(found)}")
         
         # Extraer autor
         author = page.locator("div.author-name.ff-14px-w800").first
@@ -88,12 +110,12 @@ def get_news_details(page, url: str):
             image = page.locator("picture img").first.get_attribute("src")
         details["image_url"] = image if image else "No disponible"
 
-        # Descripción de la noticia
-        description = page.locator("h2.h3.ff-20px-w400").first
-        details["headline"] = description.inner_text().strip() if description.count() > 0 else "No disponible"
 
     except Exception as e:
         print(f"Error en get_news_details: {e}")
         details["error"] = str(e)
+
+        if keyword:
+            return None
 
     return details
