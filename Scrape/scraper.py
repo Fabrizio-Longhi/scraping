@@ -1,5 +1,10 @@
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from rich import print
+from datetime import datetime
+import locale
+import re
+from utils import DataConverter
+
 
 def scrape_news(url: str):
     with sync_playwright() as playwright:
@@ -22,7 +27,6 @@ def scrape_news(url: str):
         
         print(f"Se encontraron {len(links)} links de noticias")
 
-        # Procesar solo 5 noticias para pruebas
         details_news = []
         for item in links[:60]:
             try:
@@ -34,11 +38,16 @@ def scrape_news(url: str):
 
         browser.close()
         return details_news
+    
+
+
 
 def get_news_details(page, url: str, title: str):
     """Extrae los detalles de una noticia individual"""
     print(f"Extrayendo detalles de la noticia: {url}")
     
+    DataConverter.set_spanish_locales()           # Establecer locale en español para parsear fechas          
+
     try:
         page.goto(url, timeout=20000)
         page.wait_for_load_state("domcontentloaded", timeout=10000)
@@ -50,11 +59,18 @@ def get_news_details(page, url: str, title: str):
         details["author"] = author.inner_text().strip() if author.count() > 0 else "No disponible"
 
         # Extraer fecha
-        date = page.locator("div.date.modification-date.ff-14px time").first
-        details["date"] = date.inner_text().strip() if date.count() > 0 else "No disponible"
+        date_element = page.locator("div.date.modification-date.ff-14px time").first
+        if date_element.count() > 0:
+            date_text = date_element.inner_text().strip()
+            date_text = re.sub(r"\s+", " ", date_text).strip()                                      # Remover espacios duplicados
+
+            details["date"] = DataConverter.convert_to_iso8601(date_text)                         # Convertir fecha a ISO 8601
+
+        else:
+            details["date"] = "No disponible"
 
         # URL de imagen principal
-        image = page.locator("picture source").first.get_attribute("srcset")
+        image = page.locator(".article-main-media-image__container picture source").first.get_attribute("srcset")
         if not image:
             image = page.locator("picture img").first.get_attribute("src")
         details["image_url"] = image if image else "No disponible"
