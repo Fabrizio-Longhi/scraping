@@ -19,19 +19,19 @@ def scrape_news(url: str):
         except PlaywrightTimeoutError:
             print("Advertencia: Timeout esperando carga inicial, continuando...")
 
-        all_links = page.locator("span.title-prefix a")
+        all_links = page.locator("span.title-prefix a, h2.element.title a")
         links = [
-            {"title": link.inner_text(), "url": link.get_attribute("href")}
+            {"url": link.get_attribute("href")}
             for link in all_links.all()
         ]
         
         print(f"Se encontraron {len(links)} links de noticias")
 
         details_news = []
-        for item in links[:60]:
+        for item in links:
             if is_valid_news(item["url"]):
                 try:
-                    details = get_news_details(page, item["url"], item["title"])
+                    details = get_news_details(page, item["url"])
                     details_news.append(details)
                     print(f"Detalles extraídos: {details}")
                 except Exception as e:
@@ -50,7 +50,7 @@ def is_valid_news(url: str) -> bool:
 
 
 
-def get_news_details(page, url: str, title: str):
+def get_news_details(page, url: str):
     """Extrae los detalles de una noticia individual"""
     print(f"Extrayendo detalles de la noticia: {url}")
     
@@ -60,8 +60,12 @@ def get_news_details(page, url: str, title: str):
         page.goto(url, timeout=20000)
         page.wait_for_load_state("domcontentloaded", timeout=10000)
 
-        details = {"url": url, "title": title}
+        details = {"url": url}
 
+        # Extraer título
+        title = page.locator('div[class="col 2-col"] h1').first
+        details["title"] = title.inner_text().strip() if title.count() > 0 else "No disponible"
+        
         # Extraer autor
         author = page.locator("div.author-name.ff-14px-w800").first
         details["author"] = author.inner_text().strip() if author.count() > 0 else "No disponible"
