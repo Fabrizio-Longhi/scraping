@@ -29,16 +29,24 @@ def scrape_news(url: str):
 
         details_news = []
         for item in links[:60]:
-            try:
-                details = get_news_details(page, item["url"], item["title"])
-                details_news.append(details)
-                print(f"Detalles extraídos: {details}")
-            except Exception as e:
-                print(f"Error procesando noticia {item['url']}: {e}")
-
+            if is_valid_news(item["url"]):
+                try:
+                    details = get_news_details(page, item["url"], item["title"])
+                    details_news.append(details)
+                    print(f"Detalles extraídos: {details}")
+                except Exception as e:
+                    print(f"Error procesando noticia {item['url']}: {e}")
+            else:
+                print(f"URL no válida: {item['url']}")
+                
         browser.close()
         return details_news
     
+
+def is_valid_news(url: str) -> bool:
+    """Verifica si una URL es una noticia válida"""
+    pattern = r"https://www.pagina12.com.ar/\d+.*"
+    return bool(re.match(pattern, url))    
 
 
 
