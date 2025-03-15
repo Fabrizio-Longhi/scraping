@@ -1,6 +1,5 @@
-# PruebaTecnica-ReputacionDigital
 
-## Extraccion de datos
+# Extraccion de datos
 
 Este proyecto consta de la extraccion de datos de un portal de noticias. El objetivo es que el usuario pase una palabra clave, y se realice la extraccion de las noticias que contenga esa palabra clave en el titulo o descripcion.
 
