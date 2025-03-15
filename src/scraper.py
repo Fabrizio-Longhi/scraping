@@ -28,10 +28,16 @@ def scrape_news(url: str, keyword: str):
         
         print(f"Se encontraron {len(links)} links de noticias")
 
+        # ver si hay links repetidos
+        linkss = [dict(t) for t in {tuple(d.items()) for d in links}]
+        print(f"Se encontraron {len(linkss)} links de noticias sin repetidos")
+
+
+
         details_news = []
         for item in links:
             url = item["url"]
-            if url and is_valid_news(item["url"]):
+            if url and is_valid_news(item["url"]) and not any(d["url"] == url for d in details_news):
                 try:
                     details = get_news_details(page, item["url"], keyword)
 
