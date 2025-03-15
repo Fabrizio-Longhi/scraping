@@ -13,7 +13,7 @@ if __name__ == "__main__":
     check_robots(URL)
 
     # Inicializar base de datos
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "noticias_pagina12.db")
+    db_path = os.getenv("DB_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "noticias_pagina12.db"))
     storage = NewsStorage(db_path)
     
     init = time.time()

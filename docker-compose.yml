@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  scraper:
+    build: .
+    volumes:
+      - ./data:/app/data  # Montamos la carpeta ./data en la máquina local a /app/data dentro del contenedor
+    stdin_open: true
+    tty: true
+    environment:
+      - DB_PATH=/app/data/noticias_pagina12.db  # Aseguramos que el contenedor utilice esta variable de entorno

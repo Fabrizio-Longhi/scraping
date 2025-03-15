@@ -10,8 +10,7 @@ def scrape_news(url: str, keyword: str):
 
     with sync_playwright() as playwright:
         chrome = playwright.chromium            # Usar Chromium para mayor compatibilidad
-        browser = chrome.launch(headless=True,
-                                executable_path="/usr/bin/google-chrome-stable")  # Ruta de Google Chrome en Linux  # Ejecutar en headless True para mayor velocidad
+        browser = chrome.launch(headless=True,)# Ejecutar en headless True para mayor velocidad
         context = browser.new_context(user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")         # Crear un nuevo contexto de navegación
         page = context.new_page()               # Crear una nueva página
 
@@ -53,6 +52,11 @@ def is_valid_news(url: str) -> bool:
     return bool(re.match(pattern, url))    
 
 
+def contains_exact_word(text: str, word: str) -> bool:
+    """Verifica si la palabra aparece como una palabra completa en el texto."""
+    pattern = rf"\b{re.escape(word)}\b"  # \b asegura que sea una palabra completa
+    return bool(re.search(pattern, text, re.IGNORECASE))
+
 
 def get_news_details(page, url: str, keyword: str):
     """Extrae los detalles de una noticia si tiene la palabra clave"""
@@ -75,17 +79,14 @@ def get_news_details(page, url: str, keyword: str):
         details["headline"] = description.inner_text().strip() if description.count() > 0 else "No disponible"
         
         if keyword:
-            keyword_lower= keyword.lower()
-            title_lower = details["title"].lower()
-            headline_lower = details["headline"].lower()
-
-            if keyword_lower not in title_lower and keyword_lower not in headline_lower:
+            
+            if not contains_exact_word(details["title"], keyword) and not contains_exact_word(details["headline"], keyword):
                 return None
             else:
                 found = []
-                if keyword_lower in title_lower:
+                if contains_exact_word(details["title"], keyword):
                     found.append("título")
-                if keyword_lower in headline_lower:
+                if contains_exact_word(details["headline"], keyword):
                     found.append("descripción")
 
                 print(f"La noticia '{url}' contiene la palabra clave '{keyword}' en: {', '.join(found)}")
