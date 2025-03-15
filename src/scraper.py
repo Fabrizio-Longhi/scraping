@@ -10,8 +10,9 @@ def scrape_news(url: str, keyword: str):
 
     with sync_playwright() as playwright:
         chrome = playwright.chromium            # Usar Chromium para mayor compatibilidad
-        browser = chrome.launch(headless=True)  # Ejecutar en headless True para mayor velocidad
-        context = browser.new_context()         # Crear un nuevo contexto de navegación
+        browser = chrome.launch(headless=True,
+                                executable_path="/usr/bin/google-chrome-stable")  # Ruta de Google Chrome en Linux  # Ejecutar en headless True para mayor velocidad
+        context = browser.new_context(user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")         # Crear un nuevo contexto de navegación
         page = context.new_page()               # Crear una nueva página
 
         try:
@@ -27,12 +28,6 @@ def scrape_news(url: str, keyword: str):
         ]
         
         print(f"Se encontraron {len(links)} links de noticias")
-
-        # ver si hay links repetidos
-        linkss = [dict(t) for t in {tuple(d.items()) for d in links}]
-        print(f"Se encontraron {len(linkss)} links de noticias sin repetidos")
-
-
 
         details_news = []
         for item in links:

@@ -2,12 +2,16 @@ from scraper import scrape_news
 from storage import NewsStorage
 import time
 import os
-from config import URL_base
+from config import URL_base, check_robots
 
 URL = URL_base
 
 
 if __name__ == "__main__":
+
+    # Verificar archivo robots.txt
+    check_robots(URL)
+
     # Inicializar base de datos
     db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "noticias_pagina12.db")
     storage = NewsStorage(db_path)
