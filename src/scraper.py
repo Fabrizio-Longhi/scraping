@@ -33,7 +33,7 @@ def scrape_news(url: str, keyword: str):
             url = item["url"]
             if url and is_valid_news(item["url"]) and not any(d["url"] == url for d in details_news):
                 try:
-                    details = get_news_details(page, item["url"], keyword)
+                    details = get_news_details(page, item["url"], keyword)              # Extraer detalles de la noticia
 
                     if details:
                         details_news.append(details)
@@ -52,17 +52,19 @@ def is_valid_news(url: str) -> bool:
     return bool(re.match(pattern, url))    
 
 
+
 def contains_exact_word(text: str, word: str) -> bool:
     """Verifica si la palabra aparece como una palabra completa en el texto."""
-    pattern = rf"\b{re.escape(word)}\b"  # \b asegura que sea una palabra completa
-    return bool(re.search(pattern, text, re.IGNORECASE))
+    pattern = rf"\b{re.escape(word)}\b"                       # \b asegura que sea una palabra completa
+    return bool(re.search(pattern, text, re.IGNORECASE))      # Ignorar mayúsculas y minúsculas  
+
 
 
 def get_news_details(page, url: str, keyword: str):
     """Extrae los detalles de una noticia si tiene la palabra clave"""
     print(f"Extrayendo detalles de la noticia: {url}")
     
-    DataConverter.set_spanish_locales()           # Establecer locale en español para parsear fechas          
+    DataConverter.set_spanish_locales()                      # Establecer locale en español para parsear fechas          
 
     try:
         page.goto(url, timeout=20000)
@@ -79,7 +81,7 @@ def get_news_details(page, url: str, keyword: str):
         details["headline"] = description.inner_text().strip() if description.count() > 0 else "No disponible"
         
         if keyword:
-            
+
             if not contains_exact_word(details["title"], keyword) and not contains_exact_word(details["headline"], keyword):
                 return None
             else:

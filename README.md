@@ -2,7 +2,7 @@
 
 ## Extraccion de datos
 
-Este proyecto consta de la extraccion noticas de un sitio web de noticias. El objetivo es que el usuario pase una palabra clave, y se realice la extraccion de las noticias qud contenga esa palabra clave en el titulo o descripcion.
+Este proyecto consta de la extraccion de datos de un portal de noticias. El objetivo es que el usuario pase una palabra clave, y se realice la extraccion de las noticias que contenga esa palabra clave en el titulo o descripcion.
 
 El proyecto esta elaborado con **Python, SQLite, Docker y Docker compose**. Para realizar el scraping se utiliza **Playwright**
 
