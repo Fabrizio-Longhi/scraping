@@ -1,4 +1,5 @@
 FROM python:3.10
+
 # Establecer el directorio de trabajo
 WORKDIR /app
 
@@ -13,7 +14,7 @@ RUN apt-get update && apt-get install -y locales \
 ENV LANG es_ES.UTF-8
 ENV LC_ALL es_ES.UTF-8
 
-# Instalar las dependencias del sistema necesarias para Playwright
+# Instalar las dependencias del sistema para Playwright
 RUN apt-get update && apt-get install -y \
     wget \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
@@ -58,11 +59,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Instalar los binarios de Playwright y sus dependencias
 RUN playwright install --with-deps
 
-# Crear el directorio para la base de datos (si no existe)
+# Crear el directorio para la base de datos
 RUN mkdir -p /app/data
+
+# Volumen para persistir los datos
+VOLUME /app/data
 
 # Configurar el script para usar la base de datos en el volumen
 ENV DB_PATH=/app/data/noticias_pagina12.db
 
-# Definir el comando que se ejecutará al iniciar el contenedor
-CMD ["python", "src/main.py"]
+# Comando para ejecutar el script
+ENTRYPOINT ["python", "src/main.py"]

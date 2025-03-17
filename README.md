@@ -15,22 +15,39 @@ El proyecto esta elaborado con **Python, SQLite, Docker y Docker compose**. Para
 
 $ git clone git@github.com:Fabrizio-Longhi/PruebaTecnica-ReputacionDigital.git.
 
-### Montar docker
+$ cd scraping
 
-$ docker-compose build
+### Dar Permisos de Ejecución al Script (Solo Linux/Mac)
 
-### Correr docker
 
-$ docker-compose run scraper
+$ chmod +x run_scraper.sh
 
-### Dentro del script
+### Ejecutar el Web Scraper
+
+#### En Linux/Mac
+
+$ ./run_scraper.sh
+
+#### En Windows (PowerShell/CMD):
+
+$ bash run_scraper.sh
+
+o sino:
+
+docker build -t web-scraper .
+
+docker run --rm -it -v "%cd%\data:/app/data" web-scraper
+
+#### Dentro del script
 
 Ingresar la palabra clave.
 
 ### Eliminar base de datos
 
-$ docker-compose run scraper /bin/bash
+#### En Linux/Mac:
 
-$ rm /app/data/noticias_pagina12.db
+$ rm -f ./data/noticias_pagina12.db
 
-$ exit
+#### En windows:
+
+$ del .\data\noticias_pagina12.db
