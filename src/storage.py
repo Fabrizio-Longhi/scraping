@@ -1,7 +1,4 @@
 import sqlite3
-from datetime import datetime
-import os
-import json
 
 class NewsStorage:
     def __init__(self, db_path="news_database.db"):
@@ -70,7 +67,6 @@ class NewsStorage:
                 existing = self.cursor.fetchone()
                 
                 if not existing:
-                    # Almacenar la noticia como nuevo registro
                     self.cursor.execute('''
                     INSERT INTO news (Titulo, URL, Autor, Fecha, Imagen_url, Descripcion)
                     VALUES (?, ?, ?, ?, ?, ?)
