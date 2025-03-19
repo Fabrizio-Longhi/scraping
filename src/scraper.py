@@ -3,11 +3,17 @@ from rich import print
 import re
 from utils import DataConverter
 import random
-import time
+import time 
+
+
 user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15"
+"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/537.36",
+    "Mozilla/5.0 (iPad; CPU OS 16_5 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.10 Mobile Safari/537.36"
 ]
 
 def scrape_news(url: str, keyword: str):
@@ -22,13 +28,21 @@ def scrape_news(url: str, keyword: str):
         page = context.new_page()
 
         try:
-            page.goto(url, timeout=30000) 
+            try:
+                 page.goto(url, timeout=30000)
+            except PlaywrightTimeoutError:
+                    print("Recibido 429, esperando antes de reintentar...")
+                    time.sleep(random.uniform(10, 20))  
+                    page.goto(url, timeout=30000) 
             page.wait_for_load_state("domcontentloaded", timeout=15000)
         except PlaywrightTimeoutError:
             print("Advertencia: Timeout esperando carga inicial, continuando...")
 
 
-        all_links = page.locator("h2.is-display-inline.article-title a, div.element.title-prefix a")
+        all_links = page.locator("article.headline-card-inner h2.is-display-inline.article-title a, "
+                                "div.element.title-prefix a, "
+                                "div.headline-card h2.article-title a, "
+                                "div.headline-suplemento h2.is-display-inline.article-title a")
 
         links = [
             {"url": link.get_attribute("href")}
@@ -56,60 +70,80 @@ def scrape_news(url: str, keyword: str):
         print(f"Total de links después de procesar suplementos: {len(links)}")
 
         details_news = []
-        i= 1
+        i = 1
+
         for item in links:
             url = item["url"]
+            print(f"Procesando link {i}/{len(links)}: {url}")
 
             if url and is_valid_news(item["url"]) and not any(d["url"] == url for d in details_news):
                 try:
-                    details = get_news_details(context, item["url"], keyword,i)                # Extraer detalles de la noticia
-
+                    # Extraer detalles de la noticia
+                    details = get_news_details(page, item["url"], keyword)  
                     if details:
                         details_news.append(details)
-                    time.sleep(0.2)
+
+                    if  i%5 == 0:
+                        print(f"Esperando 2 segundo antes de continuar...")
+                        time.sleep(2.5)
                 except Exception as e:
                     print(f"Error procesando noticia {item['url']}: {e}")
             else:
-                print(f"URL no válida: {item['url']}")
+                print(f"URL no válida o duplicada: {item['url']}")
             i += 1
                 
         browser.close()
         return details_news
     
 
-def get_news_details(context, url: str, keyword: str,i):
+def get_news_details(page, url: str, keyword: str):
     """Extrae los detalles de una noticia si tiene la palabra clave"""
-    print(f"Extrayendo detalles de la noticia: {url}: i={i}")
-    
-    
-    DataConverter.set_spanish_locales()                      # Establecer locale en español para parsear fechas     
-    page = context.new_page()     
+
+    # Establecer locale en español para parsear fechas  
+    DataConverter.set_spanish_locales()                              
 
     try:
-        page.goto(url, timeout=20000)
-        page.wait_for_load_state("domcontentloaded", timeout=10000)
+        try:
+            page.goto(url, timeout=30000)
+        except PlaywrightTimeoutError:
+                print("Recibido 429, esperando antes de reintentar...")
+                time.sleep(random.uniform(10, 20))  
+                page.goto(url, timeout=30000) 
+        page.wait_for_load_state("domcontentloaded", timeout=20000)
 
         details = {"url": url}
-
+        
         # Extraer título
-        title = page.locator('div[class="col 2-col"] h1').first
-        details["title"] = title.inner_text().strip() if title.count() > 0 else "No disponible"
+        try:
+            page.wait_for_selector('div[class="col 2-col"] h1', timeout=28000, state="attached")
+            title = page.locator('div[class="col 2-col"] h1').first
+            details["title"] = title.inner_text().strip() if title else "No disponible"
+        except TimeoutError as e:
+            print(f"Error en titulo: {e}")
+            details["title"] = "No disponible"
 
-        # Descripción de la noticia
-        description = page.locator("h2.h3.ff-20px-w400").first
-        details["headline"] = description.inner_text().strip() if description.count() > 0 else "No disponible"
+        # Extraer descripción
+        try:
+            page.wait_for_selector('h2.h3.ff-20px-w400', timeout=35000, state="attached")
+            headline = page.locator('h2.h3.ff-20px-w400').first
+            details["headline"] = headline.inner_text().strip() if headline else "No disponible"
+        except TimeoutError:
+            details["headline"] = "No disponible"
+        
         if keyword:
-
-            if not contains_exact_word(details["title"], keyword) and not contains_exact_word(details["headline"], keyword):
+            title_contains_keyword = contains_exact_word(details["title"], keyword)
+            headline_contains_keyword = contains_exact_word(details["headline"], keyword)
+            if not title_contains_keyword and not headline_contains_keyword:
                 return None
             else:
                 found = []
-                if contains_exact_word(details["title"], keyword):
+                if title_contains_keyword:
                     found.append("título")
-                if contains_exact_word(details["headline"], keyword):
+                if headline_contains_keyword:
                     found.append("descripción")
 
                 print(f"La noticia '{url}' contiene la palabra clave '{keyword}' en: {', '.join(found)}")
+ 
         
         # Extraer autor
         author = page.locator("div.author-name.ff-14px-w800").first
@@ -134,14 +168,13 @@ def get_news_details(context, url: str, keyword: str,i):
 
 
     except Exception as e:
+
         print(f"Error en get_news_details: {e}")
         details["error"] = str(e)
-
         if keyword:
             return None
-    finally:
-        page.close()
 
+    print("-"*238)
     return details
 
 

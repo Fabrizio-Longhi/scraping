@@ -3,7 +3,7 @@
 ## Extraccion de datos
 
 Este proyecto consta de la extraccion de datos de un portal de noticias. El objetivo es que el usuario pase una palabra clave, y se realice la extraccion de las noticias que contenga esa palabra clave en el titulo o descripcion.
-Se extra datos de sublinks del portal de noticias
+Se extra datos de sublinks "suplementos" del portal de noticias
 
 El proyecto esta elaborado con **Python, SQLite, Docker**. Para realizar el scraping se utiliza **Playwright**
 
@@ -57,6 +57,10 @@ El proyecto esta elaborado con **Python, SQLite, Docker**. Para realizar el scra
 
 **Activar entorno virtual**
 
+                git clone git@github.com:Fabrizio-Longhi/PruebaTecnica-ReputacionDigital.git.
+
+                cd scraping
+
                 source .venv/bin/activate
 
 **Descargar requerimientos**
@@ -68,8 +72,7 @@ El proyecto esta elaborado con **Python, SQLite, Docker**. Para realizar el scra
 
 ## Posibles mejoras
 
-Si bien la extraccion anda bien, una posible mejora podria ser implementar concurrencia o asincronia.
+Si bien la extraccion anda bien, encontre varias propuestas de mejora:
 
-La idea seria:
-
-- En vez de extraer la informacion de una noticia a la vez, que se vayan extrayendo 6 noticias.concurrentemente.
+- Utilizar varias proxys para enviar mas rapidamente las requests al sitio web.
+- En vez de usar: **sync_playwright()** utilizar **async_playwright()**. Con esta mejora podremos implementar extracciones concurrentes y asi poder disminuir el tiempo de extraccion.
