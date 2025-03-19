@@ -1,6 +1,6 @@
 # Define configuraciones como User-Agent, URL base, headers, etc
 import requests
-from playwright.sync_api import sync_playwright
+
 
 URL_base = "https://www.pagina12.com.ar/"
 
