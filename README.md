@@ -3,7 +3,7 @@
 ## Extraccion de datos
 
 Este proyecto consta de la extraccion de datos de un portal de noticias. El objetivo es que el usuario pase una palabra clave, y se realice la extraccion de las noticias que contenga esa palabra clave en el titulo o descripcion.
-Se extra datos de sublinks "suplementos" del portal de noticias
+Se extrae datos de sublinks "suplementos" del portal de noticias
 
 El proyecto esta elaborado con **Python, SQLite, Docker**. Para realizar el scraping se utiliza **Playwright**
 
@@ -65,7 +65,7 @@ El proyecto esta elaborado con **Python, SQLite, Docker**. Para realizar el scra
 
 **Descargar requerimientos**
 
-                pip install requirements.txt
+                pip install -r requirements.txt
 
 **Ejecutar**
                 python3 main.py
