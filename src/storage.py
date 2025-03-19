@@ -18,7 +18,7 @@ class NewsStorage:
         """Establece la conexión con la base de datos SQLite"""
         try:
             self.connection = sqlite3.connect(self.db_path)
-            self.connection.row_factory = sqlite3.Row  # Para acceder a las columnas por nombre
+            self.connection.row_factory = sqlite3.Row  
             self.cursor = self.connection.cursor()
             print(f"Conexión exitosa a la base de datos: {self.db_path}")
         except sqlite3.Error as e:

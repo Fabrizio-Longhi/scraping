@@ -109,13 +109,13 @@ def get_news_details(page, url: str, keyword: str):
                 print("Recibido 429, esperando antes de reintentar...")
                 time.sleep(random.uniform(10, 20))  
                 page.goto(url, timeout=30000) 
-        page.wait_for_load_state("domcontentloaded", timeout=20000)
+        page.wait_for_load_state("domcontentloaded", timeout=30000)
 
         details = {"url": url}
-        
+        time.sleep(0.5)
         # Extraer título
         try:
-            page.wait_for_selector('div[class="col 2-col"] h1', timeout=28000, state="attached")
+            page.wait_for_selector('div[class="col 2-col"] h1', timeout=20000, state="attached")
             title = page.locator('div[class="col 2-col"] h1').first
             details["title"] = title.inner_text().strip() if title else "No disponible"
         except TimeoutError as e:
